@@ -17,7 +17,7 @@ router.post("/", async (req, res, next) => {
       senderId,
       recipientId
     );
-    let convoJSON = conversation.toJSON();
+    let convoJSON =  conversation?.toJSON();
 
     // Increment either user1Unread or user2Unread by 1 and update conversation table
     if (conversation) {
