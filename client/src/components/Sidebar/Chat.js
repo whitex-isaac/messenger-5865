@@ -14,15 +14,35 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     alignItems: "center",
     "&:hover": {
-      cursor: "grab"
-    }
-  }
+      cursor: "grab",
+    },
+  },
+  unreadMsgCountWrapper: {
+    padding: "0 8px",
+    borderRadius: "50%",
+    backgroundColor: "#3F92FF",
+    marginRight: "30px",
+  },
+  unreadMsgCount: {
+    fontFamily: " Open Sans",
+    fontStyle: "normal",
+    fontWeight: "bold",
+    fontSize: "12px",
+    lineHeight: "1px",
+    letterSpacing: "-0.5px",
+    textAlign: "center",
+    color: "#ffffff",
+  },
 }));
 
 const Chat = (props) => {
   const classes = useStyles();
-  const { conversation } = props;
+  const { conversation, user } = props;
   const { otherUser } = conversation;
+  const unreadMsgCount =
+    user.id === conversation.user1Id
+      ? conversation.user1Unread
+      : conversation.user2Unread;
 
   const handleClick = async (conversation) => {
     await props.setActiveChat(conversation.otherUser.username);
@@ -37,16 +57,27 @@ const Chat = (props) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
+      {unreadMsgCount > 0 && (
+        <div className={classes.unreadMsgCountWrapper}>
+          <p className={classes.unreadMsgCount}>{unreadMsgCount}</p>
+        </div>
+      )}
     </Box>
   );
+};
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.user,
+  };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
     setActiveChat: (id) => {
       dispatch(setActiveChat(id));
-    }
+    },
   };
 };
 
-export default connect(null, mapDispatchToProps)(Chat);
+export default connect(mapStateToProps, mapDispatchToProps)(Chat);

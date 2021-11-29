@@ -10,13 +10,25 @@ import { clearOnLogout } from "../store/index";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    height: "100vh"
-  }
+    height: "100vh",
+  },
+  noConversation: {
+    display: "flex",
+    flexGrow: 8,
+    width: "60%",
+  },
+  noConversationMessage: {
+    fontSize: "calc(2vw + 30px)",
+    color: "rgb(224, 220, 220)",
+    width: "80%",
+    maxWidth: "700px",
+    margin: "2rem",
+  },
 }));
 
 const Home = (props) => {
   const classes = useStyles();
-  const { user, logout, fetchConversations } = props;
+  const { user, activeConversation, logout, fetchConversations } = props;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -31,8 +43,8 @@ const Home = (props) => {
 
   if (!user.id) {
     // If we were previously logged in, redirect to login instead of register
-    if (isLoggedIn) return <Redirect to="/login" />;
-    return <Redirect to="/register" />;
+    if (isLoggedIn) return <Redirect to='/login' />;
+    return <Redirect to='/register' />;
   }
 
   const handleLogout = async () => {
@@ -45,10 +57,16 @@ const Home = (props) => {
       <Button className={classes.logout} onClick={handleLogout}>
         Logout
       </Button>
-      <Grid container component="main" className={classes.root}>
+      <Grid container component='main' className={classes.root}>
         <CssBaseline />
         <SidebarContainer />
-        <ActiveChat />
+        {(activeConversation && <ActiveChat />) || (
+          <div className={classes.noConversation}>
+            <span className={classes.noConversationMessage}>
+              Select a conversation to start chatting.
+            </span>
+          </div>
+        )}
       </Grid>
     </>
   );
@@ -57,7 +75,8 @@ const Home = (props) => {
 const mapStateToProps = (state) => {
   return {
     user: state.user,
-    conversations: state.conversations
+    conversations: state.conversations,
+    activeConversation: state.activeConversation,
   };
 };
 
@@ -69,7 +88,7 @@ const mapDispatchToProps = (dispatch) => {
     },
     fetchConversations: () => {
       dispatch(fetchConversations());
-    }
+    },
   };
 };
 

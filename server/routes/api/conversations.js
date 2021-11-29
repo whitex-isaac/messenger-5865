@@ -18,7 +18,7 @@ router.get("/", async (req, res, next) => {
           user2Id: userId,
         },
       },
-      attributes: ["id"],
+      attributes: ["id", "user1Id", "user2Id", "user1Unread", "user2Unread"],
       order: [[Message, "createdAt", "DESC"]],
       include: [
         { model: Message, order: ["createdAt", "DESC"] },
@@ -73,6 +73,35 @@ router.get("/", async (req, res, next) => {
     }
 
     res.json(conversations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// When user read's message, Update unread message count to zero.
+router.patch("/userread/:conversationId", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+    const userId = req.user.id;
+    const conversationId = req.params.conversationId;
+
+    const convo = await Conversation.findOne({
+      where: {
+        id: {
+          [Op.eq]: conversationId,
+        },
+      },
+    });
+
+    const convoJSON = convo.toJSON();
+    let unreadToUpdate =
+      convoJSON.user1Id === userId ? { user1Unread: 0 } : { user2Unread: 0 };
+
+    await Conversation.updateById(conversationId, unreadToUpdate);
+
+    res.json(unreadToUpdate);
   } catch (error) {
     next(error);
   }

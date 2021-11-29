@@ -4,6 +4,7 @@ import {
   gotConversations,
   addConversation,
   setNewMessage,
+  messagesRead,
   setSearchedUsers,
 } from "../conversations";
 import { gotUser, setFetchingStatus } from "../user";
@@ -78,6 +79,17 @@ export const fetchConversations = () => async (dispatch) => {
   }
 };
 
+// when user read message, make a patch REST API call to set the 
+// unread message count to zero and dispatch the messagesRead reducer function.
+export const markAsRead = (data) => async (dispatch) => {
+  try {
+    await axios.patch(`/api/conversations/userread/${data.conversationId}`);
+    dispatch(messagesRead(data));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const saveMessage = async (body) => {
   const { data } = await axios.post("/api/messages", body);
   return data;
@@ -88,6 +100,7 @@ const sendMessage = (data, body) => {
     message: data.message,
     recipientId: body.recipientId,
     sender: data.sender,
+    convoUpdated: data.convoUpdated,
   });
 };
 
@@ -100,7 +113,7 @@ export const postMessage = (body) => async (dispatch) => {
     if (!body.conversationId) {
       dispatch(addConversation(body.recipientId, data.message));
     } else {
-      dispatch(setNewMessage(data.message));
+      dispatch(setNewMessage(data.convoUpdated, data.message));
     }
 
     sendMessage(data, body);

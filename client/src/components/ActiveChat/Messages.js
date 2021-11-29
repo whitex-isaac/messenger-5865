@@ -8,15 +8,20 @@ const Messages = (props) => {
 
   return (
     <Box>
-      {messages.reverse().map((message) => {
-        const time = moment(message.createdAt).format("h:mm");
+      {messages.map((message, index) => {
+        const reversedMsg = messages[messages.length - (index + 1)];
+        const time = moment(reversedMsg.createdAt).format("h:mm");
 
-        return message.senderId === userId ? (
-          <SenderBubble key={message.id} text={message.text} time={time} />
+        return reversedMsg.senderId === userId ? (
+          <SenderBubble
+            key={reversedMsg.id}
+            text={reversedMsg.text}
+            time={time}
+          />
         ) : (
           <OtherUserBubble
-            key={message.id}
-            text={message.text}
+            key={reversedMsg.id}
+            text={reversedMsg.text}
             time={time}
             otherUser={otherUser}
           />
