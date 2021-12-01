@@ -7,6 +7,7 @@ import { connect } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   root: {
+    position: "relative",
     borderRadius: 8,
     height: 80,
     boxShadow: "0 2px 10px 0 rgba(88,133,196,0.05)",
@@ -18,9 +19,10 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   unreadCount: {
+    position: "unset",
     "& .MuiBadge-badge": {
-      right: "-98%",
-      top: 13,
+      right: 20,
+      top: "47%",
       color: "#fff",
       backgroundColor: "#3F92FF",
     },
