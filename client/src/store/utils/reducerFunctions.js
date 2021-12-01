@@ -1,5 +1,5 @@
 export const addMessageToStore = (state, payload) => {
-  const { convoUpdated, message, sender } = payload;
+  const { message, sender, userId } = payload;
 
   // if sender isn't null, that means the message needs to be put in a brand new convo
   if (sender !== null) {
@@ -7,17 +7,36 @@ export const addMessageToStore = (state, payload) => {
       id: message.conversationId,
       otherUser: sender,
       messages: [message],
-      ...convoUpdated,
     };
     newConvo.latestMessageText = message.text;
+
+    if (userId && userId !== sender.id) {
+      newConvo.unreadCount = 1;
+    }
+    newConvo.firstUnreadIndex = 0;
     return [newConvo, ...state];
   }
 
   return state.map((convo) => {
     if (convo.id === message.conversationId) {
-      const convoCopy = { ...convo, ...convoUpdated };
+      const convoCopy = { ...convo };
+
       convoCopy.messages = [message, ...convoCopy.messages];
       convoCopy.latestMessageText = message.text;
+
+      if (userId && userId !== message.senderId) {
+        convoCopy.unreadCount += 1;
+      }
+
+      if (convoCopy.firstUnreadIndex === -1) {
+        for (let i = convoCopy.messages.length - 1; i >= 0; i--) {
+          if (message.unread && userId !== message.senderId) {
+            convoCopy.firstUnreadIndex = i;
+            break;
+          }
+        }
+      }
+
       return convoCopy;
     } else {
       return convo;
@@ -25,12 +44,29 @@ export const addMessageToStore = (state, payload) => {
   });
 };
 
-// loops over conversations in state and set the conversation unread 
-//  messages count that the user has read to zero
-export const readMessages = (state, userRead) => {
+export const readMessages = (state, setAsRead) => {
   return state.map((convo) => {
-    if (convo.id === userRead.conversationId) {
-      const convoCopy = { ...convo, ...userRead.readMsg };
+    if (convo.id === setAsRead.conversationId) {
+      const convoCopy = { ...convo };
+
+      if (setAsRead?.readMessageIds?.length > 0) {
+        convoCopy.messages.forEach((message) => {
+          if (message.unread) {
+            setAsRead.readMessageIds.forEach((readMsgId) => {
+              if (message.id === readMsgId) {
+                message.unread = false;
+              }
+            });
+          }
+
+          convoCopy.unreadCount = 0;
+        });
+      }
+
+      if (setAsRead.firstUnreadIndex) {
+        convoCopy.firstUnreadIndex = setAsRead.firstUnreadIndex;
+      }
+
       return convoCopy;
     } else {
       return convo;

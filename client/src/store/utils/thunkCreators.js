@@ -79,12 +79,21 @@ export const fetchConversations = () => async (dispatch) => {
   }
 };
 
-// when user read message, make a patch REST API call to set the 
-// unread message count to zero and dispatch the messagesRead reducer function.
-export const markAsRead = (data) => async (dispatch) => {
+const sendMessageRead = (setAsRead) => {
+  socket.emit("message-read", {
+    conversationId: setAsRead.conversationId,
+    firstUnreadIndex: -1,
+  });
+};
+
+// when user read message, make a patch REST API call
+// to update the unread message feild to false
+export const markAsRead = (setAsRead) => async (dispatch) => {
   try {
-    await axios.patch(`/api/conversations/userread/${data.conversationId}`);
-    dispatch(messagesRead(data));
+    const body = { readMessageIds: setAsRead.readMessageIds };
+    await axios.patch("/api/messages/user-read/", body);
+    dispatch(messagesRead(setAsRead));
+    sendMessageRead(setAsRead);
   } catch (error) {
     console.error(error);
   }
@@ -100,7 +109,6 @@ const sendMessage = (data, body) => {
     message: data.message,
     recipientId: body.recipientId,
     sender: data.sender,
-    convoUpdated: data.convoUpdated,
   });
 };
 
@@ -113,7 +121,7 @@ export const postMessage = (body) => async (dispatch) => {
     if (!body.conversationId) {
       dispatch(addConversation(body.recipientId, data.message));
     } else {
-      dispatch(setNewMessage(data.convoUpdated, data.message));
+      dispatch(setNewMessage(data.message));
     }
 
     sendMessage(data, body);

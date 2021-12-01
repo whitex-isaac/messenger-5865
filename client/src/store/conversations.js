@@ -27,17 +27,17 @@ export const gotConversations = (conversations) => {
   };
 };
 
-export const messagesRead = (userRead) => {
+export const messagesRead = (setAsRead) => {
   return {
     type: SET_MESSAGES_READ,
-    payload: userRead,
+    payload: setAsRead,
   };
 };
 
-export const setNewMessage = (convoUpdated, message, sender) => {
+export const setNewMessage = (message, sender, userId = null) => {
   return {
     type: SET_MESSAGE,
-    payload: { convoUpdated, message, sender: sender || null },
+    payload: { message, sender: sender || null, userId },
   };
 };
 

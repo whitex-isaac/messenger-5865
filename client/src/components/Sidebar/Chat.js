@@ -1,5 +1,5 @@
 import React from "react";
-import { Box } from "@material-ui/core";
+import { Box, Badge } from "@material-ui/core";
 import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { makeStyles } from "@material-ui/core/styles";
 import { setActiveChat } from "../../store/activeConversation";
@@ -17,32 +17,20 @@ const useStyles = makeStyles((theme) => ({
       cursor: "grab",
     },
   },
-  unreadMsgCountWrapper: {
-    padding: "0 8px",
-    borderRadius: "50%",
-    backgroundColor: "#3F92FF",
-    marginRight: "30px",
-  },
-  unreadMsgCount: {
-    fontFamily: " Open Sans",
-    fontStyle: "normal",
-    fontWeight: "bold",
-    fontSize: "12px",
-    lineHeight: "1px",
-    letterSpacing: "-0.5px",
-    textAlign: "center",
-    color: "#ffffff",
+  unreadCount: {
+    "& .MuiBadge-badge": {
+      right: "-98%",
+      top: 13,
+      color: "#fff",
+      backgroundColor: "#3F92FF",
+    },
   },
 }));
 
 const Chat = (props) => {
   const classes = useStyles();
-  const { conversation, user } = props;
-  const { otherUser } = conversation;
-  const unreadMsgCount =
-    user.id === conversation.user1Id
-      ? conversation.user1Unread
-      : conversation.user2Unread;
+  const { conversation } = props;
+  const { otherUser, unreadCount } = conversation;
 
   const handleClick = async (conversation) => {
     await props.setActiveChat(conversation.otherUser.username);
@@ -56,20 +44,11 @@ const Chat = (props) => {
         online={otherUser.online}
         sidebar={true}
       />
-      <ChatContent conversation={conversation} />
-      {unreadMsgCount > 0 && (
-        <div className={classes.unreadMsgCountWrapper}>
-          <p className={classes.unreadMsgCount}>{unreadMsgCount}</p>
-        </div>
-      )}
+      <Badge badgeContent={unreadCount} className={classes.unreadCount}>
+        <ChatContent conversation={conversation} unreadCount={unreadCount} />
+      </Badge>
     </Box>
   );
-};
-
-const mapStateToProps = (state) => {
-  return {
-    user: state.user,
-  };
 };
 
 const mapDispatchToProps = (dispatch) => {
@@ -80,4 +59,4 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Chat);
+export default connect(null, mapDispatchToProps)(Chat);

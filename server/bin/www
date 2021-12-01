@@ -44,7 +44,13 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("new-message", {
       message: data.message,
       sender: data.sender,
-      convoUpdated: data.convoUpdated,
+    });
+  });
+
+  socket.on("message-read", (data) => {
+    socket.broadcast.emit("message-read", {
+      conversationId: data.conversationId,
+      firstUnreadIndex: data.firstUnreadIndex,
     });
   });
 

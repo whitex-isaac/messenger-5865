@@ -18,7 +18,7 @@ router.get("/", async (req, res, next) => {
           user2Id: userId,
         },
       },
-      attributes: ["id", "user1Id", "user2Id", "user1Unread", "user2Unread"],
+      attributes: ["id"],
       order: [[Message, "createdAt", "DESC"]],
       include: [
         { model: Message, order: ["createdAt", "DESC"] },
@@ -70,6 +70,14 @@ router.get("/", async (req, res, next) => {
       // set properties for notification count and latest message preview
       convoJSON.latestMessageText = convoJSON.messages[0].text;
       conversations[i] = convoJSON;
+
+      const { unreadCount, firstUnreadIndex } = unreadCountAndFirstUnreadIndex(
+        convoJSON.messages,
+        userId
+      );
+
+      convoJSON.unreadCount = unreadCount;
+      convoJSON.firstUnreadIndex = firstUnreadIndex;
     }
 
     res.json(conversations);
@@ -78,33 +86,29 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// When user read's message, Update unread message count to zero.
-router.patch("/userread/:conversationId", async (req, res, next) => {
-  try {
-    if (!req.user) {
-      return res.sendStatus(401);
-    }
-    const userId = req.user.id;
-    const conversationId = req.params.conversationId;
-
-    const convo = await Conversation.findOne({
-      where: {
-        id: {
-          [Op.eq]: conversationId,
-        },
-      },
-    });
-
-    const convoJSON = convo.toJSON();
-    let unreadToUpdate =
-      convoJSON.user1Id === userId ? { user1Unread: 0 } : { user2Unread: 0 };
-
-    await Conversation.updateById(conversationId, unreadToUpdate);
-
-    res.json(unreadToUpdate);
-  } catch (error) {
-    next(error);
+function unreadCountAndFirstUnreadIndex(messages, userId) {
+  if (!Array.isArray(messages)) {
+    throw "messages must be an array";
   }
-});
+
+  let unreadCount = 0;
+  let firstUnreadIndex = -1;
+
+  messages.forEach((message, index) => {
+    const reversedMsg = messages[messages.length - (index + 1)];
+    if (reversedMsg.unread && userId !== reversedMsg.senderId) {
+      unreadCount += 1;
+    }
+    if (
+      firstUnreadIndex < 0 &&
+      reversedMsg.unread &&
+      userId === reversedMsg.senderId
+    ) {
+      firstUnreadIndex = index;
+    }
+  });
+
+  return { unreadCount, firstUnreadIndex };
+}
 
 module.exports = router;
