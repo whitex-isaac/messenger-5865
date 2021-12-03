@@ -82,12 +82,10 @@ export const fetchConversations = () => async (dispatch) => {
 const sendMessageRead = (setAsRead) => {
   socket.emit("message-read", {
     conversationId: setAsRead.conversationId,
-    firstUnreadIndex: -1,
+    lastReadMsgId: setAsRead.readMessageIds[0],
   });
 };
 
-// when user read message, make a patch REST API call
-// to update the unread message feild to false
 export const markAsRead = (setAsRead) => async (dispatch) => {
   try {
     const body = { readMessageIds: setAsRead.readMessageIds };

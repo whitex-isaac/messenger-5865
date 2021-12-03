@@ -21,10 +21,10 @@ const useStyles = makeStyles((theme) => ({
   unreadCount: {
     position: "unset",
     "& .MuiBadge-badge": {
-      right: 20,
+      right: theme.spacing(2.5),
       top: "47%",
-      color: "#fff",
-      backgroundColor: "#3F92FF",
+      color: theme.palette.white.main,
+      backgroundColor: theme.palette.primary.main,
     },
   },
 }));

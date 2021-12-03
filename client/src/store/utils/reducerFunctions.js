@@ -13,7 +13,6 @@ export const addMessageToStore = (state, payload) => {
     if (userId && userId !== sender.id) {
       newConvo.unreadCount = 1;
     }
-    newConvo.firstUnreadIndex = 0;
     return [newConvo, ...state];
   }
 
@@ -25,16 +24,9 @@ export const addMessageToStore = (state, payload) => {
       convoCopy.latestMessageText = message.text;
 
       if (userId && userId !== message.senderId) {
-        convoCopy.unreadCount += 1;
-      }
-
-      if (convoCopy.firstUnreadIndex === -1) {
-        for (let i = convoCopy.messages.length - 1; i >= 0; i--) {
-          if (message.unread && userId !== message.senderId) {
-            convoCopy.firstUnreadIndex = i;
-            break;
-          }
-        }
+        convoCopy.unreadCount = !convoCopy.unreadCount
+          ? 1
+          : convoCopy.unreadCount + 1;
       }
 
       return convoCopy;
@@ -58,14 +50,42 @@ export const readMessages = (state, setAsRead) => {
               }
             });
           }
-
-          convoCopy.unreadCount = 0;
         });
+        convoCopy.unreadCount = 0;
       }
 
-      if (setAsRead.firstUnreadIndex) {
-        convoCopy.firstUnreadIndex = setAsRead.firstUnreadIndex;
+      if (setAsRead.lastReadMsgId) {
+        convoCopy.lastReadMsgId = setAsRead.lastReadMsgId;
       }
+
+      return convoCopy;
+    } else {
+      return convo;
+    }
+  });
+};
+
+export const getReadMessagesInfo = (state, setAsReadInfo) => {
+  const { messages, userId, conversationId } = setAsReadInfo;
+  return state.map((convo) => {
+    if (conversationId === convo.id && messages) {
+      const convoCopy = { ...convo };
+      const readMsgInfo = {};
+      readMsgInfo.readMessageIds = [];
+
+      messages.forEach((msg, index) => {
+        if (index === messages.length - 1) {
+          readMsgInfo.conversationId = convoCopy.id;
+          readMsgInfo.lastMsgIndex = index;
+        }
+
+        if (msg.unread && userId !== msg.senderId) {
+          readMsgInfo.senderId = msg.senderId;
+          readMsgInfo.readMessageIds = [...readMsgInfo.readMessageIds, msg.id];
+        }
+      });
+
+      convoCopy.readMsgInfo = readMsgInfo;
 
       return convoCopy;
     } else {

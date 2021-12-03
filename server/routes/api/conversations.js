@@ -69,15 +69,18 @@ router.get("/", async (req, res, next) => {
 
       // set properties for notification count and latest message preview
       convoJSON.latestMessageText = convoJSON.messages[0].text;
-      conversations[i] = convoJSON;
 
-      const { unreadCount, firstUnreadIndex } = unreadCountAndFirstUnreadIndex(
-        convoJSON.messages,
+      const getUnreadCount = await Message.getUnreadCount(convoJSON.id, userId);
+      const getLastReadMsgId = await Message.getLastReadMsgId(
+        convoJSON.id,
         userId
       );
 
-      convoJSON.unreadCount = unreadCount;
-      convoJSON.firstUnreadIndex = firstUnreadIndex;
+      convoJSON.unreadCount = getUnreadCount[0]?.unreadCount;
+      convoJSON.lastReadMsgId =
+        getLastReadMsgId[getLastReadMsgId.length - 1]?.lastReadMsgId;
+
+      conversations[i] = convoJSON;
     }
 
     res.json(conversations);
@@ -85,30 +88,5 @@ router.get("/", async (req, res, next) => {
     next(error);
   }
 });
-
-function unreadCountAndFirstUnreadIndex(messages, userId) {
-  if (!Array.isArray(messages)) {
-    throw "messages must be an array";
-  }
-
-  let unreadCount = 0;
-  let firstUnreadIndex = -1;
-
-  messages.forEach((message, index) => {
-    const reversedMsg = messages[messages.length - (index + 1)];
-    if (reversedMsg.unread && userId !== reversedMsg.senderId) {
-      unreadCount += 1;
-    }
-    if (
-      firstUnreadIndex < 0 &&
-      reversedMsg.unread &&
-      userId === reversedMsg.senderId
-    ) {
-      firstUnreadIndex = index;
-    }
-  });
-
-  return { unreadCount, firstUnreadIndex };
-}
 
 module.exports = router;

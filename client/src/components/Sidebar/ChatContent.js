@@ -13,22 +13,25 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "bold",
     letterSpacing: -0.2,
   },
-  previewText: {
-    fontSize: 12,
-    color: "#9CADC8",
-    letterSpacing: -0.17,
-  },
-  boldText: {
-    fontWeight: "bold",
-    color: "#000",
-  },
+  previewText: (props) =>
+    props.unreadCount > 0
+      ? {
+          fontWeight: "bold",
+          fontSize: 12,
+          color: theme.palette.black.main,
+          letterSpacing: -0.17,
+        }
+      : {
+          fontSize: 12,
+          color: theme.palette.lilac.light,
+          letterSpacing: -0.17,
+        },
 }));
 
 const ChatContent = (props) => {
-  const classes = useStyles();
-
   const { conversation } = props;
   const { latestMessageText, otherUser, unreadCount } = conversation;
+  const classes = useStyles({ unreadCount });
 
   return (
     <Box className={classes.root}>
@@ -36,13 +39,7 @@ const ChatContent = (props) => {
         <Typography className={classes.username}>
           {otherUser.username}
         </Typography>
-        <Typography
-          className={
-            unreadCount > 0
-              ? `${classes.previewText} ${classes.boldText}`
-              : classes.previewText
-          }
-        >
+        <Typography className={classes.previewText}>
           {latestMessageText}
         </Typography>
       </Box>

@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { Op } = require("Sequelize");
+const { Op } = require("sequelize");
 const { Conversation, Message } = require("../../db/models");
 const onlineUsers = require("../../onlineUsers");
 
