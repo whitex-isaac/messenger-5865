@@ -26,7 +26,7 @@ export const addMessageToStore = (state, payload) => {
       if (userId && userId !== message.senderId) {
         convoCopy.unreadCount = !convoCopy.unreadCount
           ? 1
-          : convoCopy.unreadCount + 1;
+          : +convoCopy.unreadCount + 1;
       }
 
       return convoCopy;
