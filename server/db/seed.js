@@ -1,7 +1,5 @@
 const db = require("./db");
 const { User, Conversation, Chat, Message } = require("./models");
-// const Conversation = require("./models/conversation");
-// const Message = require("./models/message");
 
 async function seed() {
   await db.sync({ force: true });
